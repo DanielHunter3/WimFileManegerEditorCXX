@@ -1,0 +1,7 @@
+.PVS-Studio
+.vscode
+build
+
+*.exe
+*.txt
+*.json
