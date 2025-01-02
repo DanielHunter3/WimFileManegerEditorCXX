@@ -15,7 +15,7 @@ FMCommand::~FMCommand() = default;
 Type FMCommand::setType() const noexcept { return m_type; }
 std::string FMCommand::toTerminal() const noexcept {
     if (m_type == VECSTR) {
-        std::unique_ptr<std::string> result(new std::string);
+        auto result = std::make_unique<std::string>();
         for (const auto& arg : std::get<std::vector<std::string>>(m_command)) {
             *result += arg + " ";
         }
@@ -25,7 +25,7 @@ std::string FMCommand::toTerminal() const noexcept {
 }
 
 std::string typeToString(const Type& type) noexcept { 
-    std::unique_ptr<std::map<Type, std::string>> map(new std::map<Type, std::string>);
+    auto map = std::make_unique<std::map<Type, std::string>>();
     *map = {
         {STR, "STR"},
         {VECSTR, "VECSTR"},

@@ -6,8 +6,5 @@
 #include "header/fmobject.hpp"
 
 int main(void) {
-    std::vector<std::string> args;
-    std::string s;
-    FMCommand command(s);
-    std::cout << typeToString(command.setType());
+    
 }

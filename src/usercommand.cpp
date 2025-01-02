@@ -46,7 +46,7 @@ QuantityOfParameters countParameters(const std::string& command, const int8_t& q
 
 auto f(const std::vector<std::string>& args) {
     if (args.empty()) throw std::runtime_error("Required arguments");
-    const std::string command = args.at(0);
+    const std::string command = args[0];
     const uint8_t quantityOfParameters = args.size() - 1;
 
     QuantityOfParameters paramCount = countParameters(command, quantityOfParameters);

@@ -33,7 +33,7 @@ namespace filemaneger::element {
     // };
 
     std::array<Permission, 9> getAllPermissions() {
-        std::unique_ptr<std::array<Permission, 9>> allPerms(new std::array<Permission, 9>);
+        auto allPerms = std::make_unique<std::array<Permission, 9>>();
         *allPerms = {
             OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, 
             GROUP_READ, GROUP_WRITE, GROUP_EXECUTE, 
@@ -44,8 +44,7 @@ namespace filemaneger::element {
 
     bool isOnPermission(const Permission& perm, const std::string& name) {
         fs::perms p = fs::status(name).permissions();
-        std::unique_ptr<std::map<Permission, std::filesystem::perms>> map(
-                        new std::map<Permission, std::filesystem::perms>);
+        auto map = std::make_unique<std::map<Permission, std::filesystem::perms>>();
         *map = {
             {OWNER_READ, std::filesystem::perms::owner_read},
             {OWNER_WRITE, std::filesystem::perms::owner_write},
@@ -61,7 +60,7 @@ namespace filemaneger::element {
     }
 
     std::map<Permission, bool> getPermissions(const std::string& name) {
-        std::unique_ptr<std::map<Permission, bool>> map(new std::map<Permission, bool>);
+        auto map = std::make_unique<std::map<Permission, bool>>();
         for (const auto& permission : getAllPermissions()) {
             (*map)[permission] = isOnPermission(permission, name);
         }
@@ -121,7 +120,7 @@ namespace filemaneger::file {
         if (fs::exists(path)) {
             throw ElementCreateException(("File have already created: " + path).c_str());
         }
-        std::unique_ptr<std::ofstream> file(new std::ofstream(path));
+        auto file = std::make_unique<std::ofstream>(path);
         if (!file->is_open()) {
             throw ElementCreateException(("Error opening file: " + path).c_str());
         }

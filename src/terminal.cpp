@@ -33,7 +33,7 @@ bool getTerminal(const std::vector<std::string>& tokens) {
         throw std::invalid_argument("The command line is empty");
     }
 
-    std::string command = tokens.at(0);
+    std::string command = tokens[0];
     if (!isValidFunction(command)) {
         throw std::invalid_argument("Invalid command (getTerminal)");
     }
