@@ -36,7 +36,7 @@ namespace filemaneger::element {
 namespace filemaneger::file {
     void deleteFile(const std::string& path);
     void createFile(const std::string& path);
-    void writeFile(const std::string filename, 
+    void writeFile(const std::string& filename, 
                     const std::string& string, 
                     std::ios_base::openmode mode  = std::ios::out);
     std::string readFile(const std::string& filename);

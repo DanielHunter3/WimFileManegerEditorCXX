@@ -49,3 +49,27 @@ public:
 private:
     const char* m_message;
 };
+
+class UndefinedCommandException : public std::exception {
+public:
+    UndefinedCommandException(const char* message) : m_message(message) {}
+    const char* what() const noexcept override;
+private:
+    const char* m_message;
+};
+
+class InvalidArgumentException : public std::exception {
+public:
+    InvalidArgumentException(const char* message) : m_message(message) {}
+    const char* what() const noexcept override;
+private:
+    const char* m_message;
+};
+
+class EmptyCommandException : public std::exception {
+public:
+    EmptyCommandException(const char* message) : m_message(message) {}
+    const char* what() const noexcept override;
+private:
+    const char* m_message;
+};

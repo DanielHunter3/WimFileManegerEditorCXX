@@ -29,36 +29,12 @@ std::vector<std::string> setTerminal() {
 }
 
 bool getTerminal(const std::vector<std::string>& tokens) {
-    if (tokens.size() == 0) {
-        throw std::invalid_argument("The command line is empty");
+    // TODO: false for "exit"
+    if (tokens.at(0) == "exit") {
+        return false;
     }
-
-    std::string command = tokens[0];
-    if (!isValidFunction(command)) {
-        throw std::invalid_argument("Invalid command (getTerminal)");
-    }
-    int8_t quantityOfParameters = tokens.size() - 1;
-
-    const std::array<std::string, 1> systemCommands { "exit" };
-    const std::array<std::string, 5> directoryCommands { "cd", "mkdir", "rmdir", "ls", "cls" };
-    const std::array<std::string, 10> fileCommands { "touch", "rm", "cat", 
-                                                    "echo", "rename", "cp", 
-                                                    "perm", "repem", "cut",
-                                                    "pwd" };
-
-    // if (in(systemCommands, command)) {
-    //     if (command == "exit") {
-    //         return false;
-    //     }
-    // }
-    // if (in(directoryCommands, command)) {
-    //     for (const auto& i: directoryUserCommand(tokens, command, quantityOfParameters)){
-    //         std::cout << i << std::endl;
-    //     }
-    // }
-    // else if (in(fileCommands, command)) {
-    //     std::cout << fileUserCommand(tokens, command, quantityOfParameters);
-    // }
+    FMObject object(getFMObject(tokens));
+    std::cout << object.toTerminal() << std::endl;
     return true;
 }
 

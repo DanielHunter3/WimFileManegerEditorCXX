@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "header/fmobject.hpp"
+#include "header/terminal.hpp"
 
 int main(void) {
-    
+    terminal();
 }

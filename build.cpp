@@ -55,7 +55,7 @@ void build(std::string&& src, std::string&& dest, std::string&& exe) {
     // Удаляем последний пробел
     command.pop_back();
 
-    std::cout << "Building with command: " << command << std::endl;
+    std::cout << "Building with command: " << command << "\n\n\n\n\n\n";
 
     // Выполняем команду и проверяем результат
     int result = system(command.c_str());
@@ -67,7 +67,7 @@ void build(std::string&& src, std::string&& dest, std::string&& exe) {
 int main() {
     std::cout << "--------------------------------\n" << "Building...\n" << "--------------------------------\n";
     try {
-        build("src", "app", "main");
+        build("src", "app", "app");
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;

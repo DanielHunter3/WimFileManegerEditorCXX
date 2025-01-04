@@ -1,21 +1,16 @@
-# Устанавливаем минимальную версию CMake
 cmake_minimum_required(VERSION 3.10)
 
-# Указываем имя проекта
 project(MyProject CXX)
 
-# Указываем стандарт C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Указываем директорию с исходными файлами
 include_directories(${PROJECT_SOURCE_DIR}/src/header)
 
-# Собираем список всех .cpp файлов в папке src
-file(GLOB SOURCES "src/*.cpp")
+# Используем GLOB_RECURSE для поиска всех .cpp файлов
+file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-# Создаем исполняемый файл из исходных файлов
 add_executable(MyExecutable ${SOURCES})
 
-# Если есть дополнительные библиотеки, можете их подключить
-# target_link_libraries(MyExecutable <library_name>)
+# Подключаем необходимые библиотеки (если есть)
+#target_link_libraries(MyExecutable kernel32 user32 gdi32)

@@ -3,76 +3,59 @@
 
 #include <memory>
 #include <array>
-#include <stdexcept>
 
 #include "header/usercommand.hpp"
 #include "header/details.hpp"
+#include "header/customexception.hpp"
+#include "header/funcptr.hpp"
 
-QuantityOfParameters countParameters(const std::string& command, const int8_t& quantityOfParameters) {
-    auto ZERO_PARAM = std::make_unique<std::array<std::string, 10>>(
-        //"2","2","1" /*...*/
-    );
-    auto ONE_PARAM = std::make_unique<std::array<std::string, 10>>(
-        //"2","2","1" /*...*/
-    );
-    auto TWO_PARAMS = std::make_unique<std::array<std::string, 10>>(
-        //"2","2","1" /*...*/
-    );
-    auto THREE_PARAMS = std::make_unique<std::array<std::string, 10>>(
-        //"2","2","1" /*...*/
-    );
+QuantityOfParameters countParameters(const Function& command, const int8_t& quantityOfParameters) noexcept {
+    auto ZERO_PARAM = std::make_unique<std::array<Function, 5>>();
+    auto ONE_PARAM = std::make_unique<std::array<Function, 10>>();
+    auto TWO_PARAMS = std::make_unique<std::array<Function, 10>>();
+
+    // Initialize the arrays with valid command strings
+    *ZERO_PARAM = {Cls, Ls, Exit};
+    *ONE_PARAM = {Cd, Mkdir, Rmdir, Cat, Pwd, Perm, Touch, Rm};
+    *TWO_PARAMS = {Rename, Copy, Echo, Reperm, Cut};
 
     if (in(*ZERO_PARAM, command)) {
         return ZERO;
     } else if (in(*ONE_PARAM, command)) {
-        if (quantityOfParameters < 1) {
-            throw std::invalid_argument("Invalid number of parameters");
-        }
+        if (quantityOfParameters < 1) return ARGUMENT_ERROR;
         return ONE;
     } else if (in(*TWO_PARAMS, command)) {
-        if (quantityOfParameters < 2) {
-            throw std::invalid_argument("Invalid number of parameters");
-        }
+        if (quantityOfParameters < 2) return ARGUMENT_ERROR;
         return TWO;
-    } else if (in(*THREE_PARAMS, command)) {
-        if (quantityOfParameters < 3) {
-            throw std::invalid_argument("Invalid number of parameters");
-        }
-        return THREE;
     }
 
-    return ERROR;
+    return UNDEFINED_ERROR;
 }
 
-auto f(const std::vector<std::string>& args) {
-    if (args.empty()) throw std::runtime_error("Required arguments");
-    const std::string command = args[0];
+FMObject getFMObject(const std::vector<std::string>& args) {
+    if (args.empty()) throw EmptyCommandException("Required arguments");
+    const Function command = stringToFunction(args[0]);
     const uint8_t quantityOfParameters = args.size() - 1;
+    auto fmobject = std::make_unique<FMObject>();
 
     QuantityOfParameters paramCount = countParameters(command, quantityOfParameters);
     switch (paramCount) {
-        case ZERO:
-            // Your implementation for zero-parameter commands
-
-            // End
+        case UNDEFINED_ERROR:  // Unknown command
+            throw UndefinedCommandException("Undefined command");
             break;
-        case ONE:
-            // Your implementation for one-parameter commands
-
-            // End
+        case ARGUMENT_ERROR:  // Invalid quantity of arguments
+            throw InvalidArgumentException("Invalid number of arguments");
             break;
-        case TWO:
-            // Your implementation for two-parameter commands
-
-            // End
-            break;
-        case THREE:
-            // Your implementation for three-parameter commands
-
-            // End
-            break;
-        case ERROR:
-            throw std::runtime_error("Invalid number of parameters");
+        default:
+            // Begin of implementation
+            if (command == Ls || command == Cd) {
+                fmobject->getObject(getFunctionOfDirectoryVector(args)());
+            }
+            else {
+                fmobject->getObject(getStringUniversalFunction(args)());
+            }
+            // End of implementation
             break;
     }
+    return *fmobject;
 }

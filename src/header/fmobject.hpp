@@ -10,14 +10,15 @@ enum Type {
     STR, VECSTR, UNKNOWN
 };
 
-class FMCommand {
+class FMObject {
 public:
-    FMCommand(const std::vector<std::string>& command);
-    FMCommand(const std::string& command);
-    ~FMCommand();
+    FMObject(const command_t& command);
+    FMObject(void);
+    ~FMObject();
 
     Type setType() const noexcept;
     std::string toTerminal() const noexcept;
+    void getObject(const command_t&);
 
 private:
     command_t m_command;

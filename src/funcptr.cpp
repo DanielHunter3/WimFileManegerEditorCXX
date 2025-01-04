@@ -5,73 +5,74 @@
 #include <cstdlib>
 #include <memory>
 
+#include "header/communist.hpp"
 #include "header/element.hpp"
 #include "header/funcptr.hpp"
 
 using namespace filemaneger;
 
 StringFunction getElementFunction(const std::vector<std::string>& arguments) {
-    auto functions = std::make_unique<std::map<std::string, StringFunction>>();
+    auto functions = std::make_unique<std::map<Function, StringFunction>>();
     *functions = {
-        {"rename", [arguments]() {
+        {Rename, [arguments]() {
             element::rename(arguments.at(1), arguments.at(2));
             return "\0";
         }},
-        {"copy", [arguments]() {
+        {Copy, [arguments]() {
             element::copy(arguments.at(1), arguments.at(2));
             return "\0";
         }},
-        {"pwd", [arguments]() {
+        {Pwd, [arguments]() {
             return element::pwd(arguments.at(1));
         }}
     };
-    return functions->at(arguments.at(0));
+    return functions->at(stringToFunction(arguments.at(0)));
 }
 
 StringFunction getFunctionOfFile(const std::vector<std::string>& arguments) {
-    auto functions = std::make_unique<std::map<std::string, StringFunction>>();
+    auto functions = std::make_unique<std::map<Function, StringFunction>>();
     *functions = {
-        {"cat", [arguments]() {
+        {Cat, [arguments]() {
             return filemaneger::file::readFile(arguments.at(1));
         }},
-        {"echo", [arguments]() {
-            file::writeFile(arguments.at(1), arguments.at(2));
+        {Echo, [arguments]() {
+            file::writeFile(arguments.at(1), arguments.at(2), std::ios::out);
             return "\0";
         }},
-        {"touch", [arguments](){
+        {Touch, [arguments](){
             file::createFile(arguments.at(1));
             return "\0";
         }},
-        {"rm", [arguments](){
+        {Rm, [arguments](){
             file::deleteFile(arguments.at(1));
             return "\0";
         }}
     };
-    return functions->at(arguments.at(0));
+    return functions->at(stringToFunction(arguments.at(0)));
 }
 
 VectorStringFunction getFunctionOfDirectoryVector(const std::vector<std::string>& arguments) 
 {
-    auto functions = std::make_unique<std::map<std::string, VectorStringFunction>>(); 
+    auto functions = std::make_unique<std::map<Function, VectorStringFunction>>(); 
     *functions = {
-        {"ls", [arguments]() {
-            return getFilesAndDirectories(arguments.at(1));
+        {Ls, [arguments]() {
+            return getFilesAndDirectories(".");
         }},
-        {"cd", [arguments]() {
+        {Cd, [arguments]() {
             directory::changeDirectory(arguments.at(1));
             return getFilesAndDirectories(arguments.at(1));
         }},
     };
-    return functions->at(arguments.at(0));
+    return functions->at(stringToFunction(arguments.at(0)));
 }
 
 VoidFunction getFunctionOfDirectoryVoid(const std::vector<std::string>& arguments) 
 {
-    auto functions = std::make_unique<std::map<std::string, VoidFunction>>(); 
+    auto functions = std::make_unique<std::map<Function, VoidFunction>>(); 
     *functions = {
-        {"mkdir", [arguments]() { directory::createDirectory(arguments.at(1)); }},
-        {"rmdir", [arguments]() { directory::deleteDirectory(arguments.at(1)); }},
-        {"cls", []() {
+        {Mkdir, [arguments]() { directory::createDirectory(arguments.at(1)); }},
+        {Rmdir, [arguments]() { directory::deleteDirectory(arguments.at(1)); }},
+        {Cls, []() {
             #ifdef _WIN32
                 std::system("cls");
             #else
@@ -79,49 +80,49 @@ VoidFunction getFunctionOfDirectoryVoid(const std::vector<std::string>& argument
             #endif
         }}
     };
-    return functions->at(arguments.at(0));
+    return functions->at(stringToFunction(arguments.at(0)));
 }
 
 // Все функции, кроме getFunctionOfDirectoryVector
 StringFunction getStringUniversalFunction(const std::vector<std::string>& arguments) 
 {
-    auto functions = std::make_unique<std::map<std::string, StringFunction>>();
+    auto functions = std::make_unique<std::map<Function, StringFunction>>();
     *functions = {
-        {"rename", [arguments]() {
+        {Rename, [arguments]() {
             element::rename(arguments.at(1), arguments.at(2));
             return "\0";
         }},
-        {"copy", [arguments]() {
+        {Copy, [arguments]() {
             element::copy(arguments.at(1), arguments.at(2));
             return "\0";
         }},
-        {"pwd", [arguments]() {
+        {Pwd, [arguments]() {
             return element::pwd(arguments.at(1));
         }},
-        {"cat", [arguments]() {
+        {Cat, [arguments]() {
             return filemaneger::file::readFile(arguments.at(1));
         }},
-        {"echo", [arguments]() {
-            file::writeFile(arguments.at(1), arguments.at(2));
+        {Echo, [arguments]() {
+            file::writeFile(arguments.at(1), arguments.at(2), std::ios::out);
             return "\0";
         }},
-        {"touch", [arguments](){
+        {Touch, [arguments](){
             file::createFile(arguments.at(1));
             return "\0";
         }},
-        {"rm", [arguments](){
+        {Rm, [arguments](){
             file::deleteFile(arguments.at(1));
             return "\0";
         }},
-        {"mkdir", [arguments]() { 
+        {Mkdir, [arguments]() { 
             directory::createDirectory(arguments.at(1)); 
             return "\0";
         }},
-        {"rmdir", [arguments]() { 
+        {Rmdir, [arguments]() { 
             directory::deleteDirectory(arguments.at(1)); 
             return "\0";
         }},
-        {"cls", []() {
+        {Cls, []() {
             #ifdef _WIN32
                 std::system("cls");
             #else
@@ -130,5 +131,5 @@ StringFunction getStringUniversalFunction(const std::vector<std::string>& argume
             return "\0";
         }}
     };
-    return functions->at(arguments.at(0));
+    return functions->at(stringToFunction(arguments.at(0)));
 }

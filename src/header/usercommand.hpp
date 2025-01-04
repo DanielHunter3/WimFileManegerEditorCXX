@@ -3,11 +3,14 @@
 #include <vector>
 #include <string>
 
+#include "fmobject.hpp"
+#include "communist.hpp"
+
 enum QuantityOfParameters {
-    ZERO, ONE, TWO, THREE,
-    ERROR
+    ZERO, ONE, TWO,
+    UNDEFINED_ERROR, ARGUMENT_ERROR
 };
 
-QuantityOfParameters countParameters(const std::string& command, const int8_t& quantityOfParameters);
+QuantityOfParameters countParameters(const Function& command, const int8_t& quantityOfParameters) noexcept;
 
-auto f(const std::vector<std::string>& args);
+FMObject getFMObject(const std::vector<std::string>& args);

@@ -3,18 +3,36 @@
 
 #include <memory>
 #include <array>
+#include <map>
 
 #include "header/details.hpp"
 #include "header/communist.hpp"
 
-bool isValidFunction(std::string& aCommand) {
-    auto allCommands = std::make_unique<std::array<std::string, 15>>();
+bool isValidFunction(const Function& aCommand) noexcept {
+    auto allCommands = std::make_unique<std::array<Function, 16>>();
     *allCommands = {
-        "cat", "pwd", "rename", "cp", "cut" "echo", "perm", 
-        "repem", "ls", "cd", "mkdir", "rmdir", "cls", "exit"
+        Cat, Pwd, Rename,
+        Copy, Cut, Echo, 
+        Perm, Reperm, Ls, 
+        Cd, Mkdir, Rmdir, 
+        Cls, Rm, Touch,
+        Exit
     };
     if (in(*allCommands, aCommand)) {
         return true;
     }
     return false;
+}
+
+Function stringToFunction(const std::string& strfunc) {
+    auto map = std::make_unique<std::map<std::string, Function>>();
+    *map = {
+        {"cat", Cat}, {"pwd", Pwd}, {"rename", Rename}, 
+        {"cp", Copy}, {"cut", Cut}, {"echo", Echo},
+        {"perm", Perm}, {"reperm", Reperm}, {"ls", Ls}, 
+        {"cd", Cd}, {"mkdir", Mkdir}, {"rmdir", Rmdir}, 
+        {"cls", Cls}, {"rm", Rm}, {"touch", Touch},
+        {"exit", Exit}
+    };
+    return map->at(strfunc);
 }

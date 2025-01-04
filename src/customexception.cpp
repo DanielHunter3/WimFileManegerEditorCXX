@@ -26,3 +26,15 @@ const char* ElementCreateException::what() const noexcept {
 const char* ChangeDirectoryException::what() const noexcept {
     return m_message;
 }
+
+const char* UndefinedCommandException::what() const noexcept {
+    return m_message;
+}
+
+const char* InvalidArgumentException::what() const noexcept {
+    return m_message;
+}
+
+const char* EmptyCommandException::what() const noexcept {
+    return m_message;
+}

@@ -20,18 +20,6 @@ namespace filemaneger {}
 
 namespace filemaneger::element {
 
-    // enum Permission {
-    //     OWNER_READ,
-    //     OWNER_WRITE,
-    //     OWNER_EXECUTE,
-    //     GROUP_READ,
-    //     GROUP_WRITE,
-    //     GROUP_EXECUTE,
-    //     OTHERS_READ,
-    //     OTHERS_WRITE,
-    //     OTHERS_EXECUTE
-    // };
-
     std::array<Permission, 9> getAllPermissions() {
         auto allPerms = std::make_unique<std::array<Permission, 9>>();
         *allPerms = {
