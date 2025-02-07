@@ -6,8 +6,12 @@
 #include <filesystem>
 #include <array>
 #include <map>
-#include <sys/stat.h>
 #include <fstream>
+#include <sys/stat.h>
+
+#if defined(__unix__)
+    #include <unistd.h>
+#endif
 
 #include "header/details.hpp"
 #include "header/customexception.hpp"
@@ -91,7 +95,7 @@ namespace filemaneger::element {
         if (fs::exists(name)) {
             throw ElementCreateException(("File or directory already exists: " + name).c_str());
         }
-        if (in(name, '.')) { filemaneger::file::createFile(name); }//
+        if (in(name, '.')) { filemaneger::file::createFile(name); }
         else { filemaneger::directory::createDirectory(name); }
     }
 }
@@ -143,7 +147,15 @@ namespace filemaneger::file {
 namespace filemaneger::directory {
 
     void createDirectory(const std::string& dirname) {
-        if (mkdir(dirname.c_str()) == -1) {
+        int result = -1;
+
+        #if defined(Win32)
+            result = mkdir(dirname.c_str());
+        #elif defined(__unix__)
+            result = mkdir(dirname.c_str(), 0777);
+        #endif
+
+        if (result == -1) {
             throw ElementCreateException(("Could not create directory: " + dirname).c_str());
         }
     }
@@ -159,5 +171,4 @@ namespace filemaneger::directory {
             throw ElementDeleteException(("Could not delete directory: " + dirname).c_str());
         }
     }
-
 }
