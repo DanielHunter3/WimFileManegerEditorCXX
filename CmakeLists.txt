@@ -10,7 +10,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/header)
 # Используем GLOB_RECURSE для поиска всех .cpp файлов
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-add_executable(MyExecutable ${SOURCES})
+add_executable(MyExecutable "src/main.cpp" ${SOURCES})
 
 # Подключаем необходимые библиотеки (если есть)
 #target_link_libraries(MyExecutable kernel32 user32 gdi32)
