@@ -31,7 +31,7 @@ public:
         : m_type(type), m_message("No information") {}
 
     const TypeOfError type() const noexcept;
-    const std::string message() const noexcept;
+    const std::string& message() const noexcept;
 
 private:
     TypeOfError m_type;

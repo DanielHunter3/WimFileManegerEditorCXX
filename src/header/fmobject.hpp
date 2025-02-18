@@ -7,7 +7,8 @@
 #include "commandhandler.hpp"
 
 enum Type {
-    STR, VECSTR, UNKNOWN
+    STR, VECSTR, 
+    UNKNOWN
 };
 
 class FMObject {

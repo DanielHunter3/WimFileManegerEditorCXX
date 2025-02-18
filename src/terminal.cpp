@@ -29,8 +29,10 @@ std::vector<std::string> setTerminal() {
 }
 
 Result<bool> getTerminal(const std::vector<std::string>& tokens) noexcept {
-    // TODO: false for "exit"
-    if (tokens.at(0) == "exit") {
+    if (tokens.empty()) {
+        return ResultError {EmptyCommandError, "No command specified!"};
+    }
+    if (tokens[0] == "exit") {
         return false;
     }
     auto t = getFMObject(tokens);

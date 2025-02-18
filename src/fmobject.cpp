@@ -19,6 +19,9 @@ FMObject::~FMObject() = default;
 Type FMObject::setType() const noexcept { return m_type; }
 std::string FMObject::toTerminal() const noexcept {
     if (m_type == VECSTR) {
+        // Если кол-во элементов векторе огромно,
+        // то лучше перестраховаться и воспользоваться указателем,
+        // а не стековой переменной
         auto result = std::make_unique<std::string>();
         for (const auto& arg : std::get<std::vector<std::string>>(m_command)) {
             *result += arg + "\n";
@@ -35,11 +38,10 @@ void FMObject::getObject(const Universal& command) {
 }
 
 std::string typeToString(const Type& type) noexcept { 
-    auto map = std::make_unique<std::map<Type, std::string>>();
-    *map = {
+    std::map<Type, std::string> map = {
         {STR, "STR"},
         {VECSTR, "VECSTR"},
         {UNKNOWN, "UNKNOWN"},
     };
-    return (*map)[type];
+    return map[type];
 }

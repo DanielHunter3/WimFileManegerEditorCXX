@@ -3,7 +3,7 @@
 
 #include "header/usercommand.hpp"
 #include "header/details.hpp"
-#include "commandhandler.hpp"
+#include "header/commandhandler.hpp"
 
 Result<FMObject> getFMObject(const std::vector<std::string>& args) noexcept {
     if (args.empty()) return ResultError {EmptyCommandError};
@@ -15,7 +15,6 @@ Result<FMObject> getFMObject(const std::vector<std::string>& args) noexcept {
     if (object.is_error()) {
         return ResultError {object.error()};
     }
-    FMObject fmobject;
-    fmobject.getObject(*object);
+    FMObject fmobject(*object);
     return fmobject;
 }
