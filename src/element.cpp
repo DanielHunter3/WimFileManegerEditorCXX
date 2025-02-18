@@ -1,11 +1,6 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <string>
-#include <memory>
-#include <filesystem>
-#include <array>
-#include <map>
 #include <fstream>
 #include <sys/stat.h>
 
@@ -14,8 +9,6 @@
 #endif
 
 #include "header/details.hpp"
-#include "header/customexception.hpp"
-#include "resulthandler.hpp" // new
 
 #include "header/element.hpp"
 
@@ -25,20 +18,18 @@ namespace filemaneger {}
 
 namespace filemaneger::element {
 
-    std::array<Permission, 9> getAllPermissions() {
-        auto allPerms = std::make_unique<std::array<Permission, 9>>();
-        *allPerms = {
+    std::array<Permission, 9> getAllPermissions() noexcept {
+        std::array<Permission, 9> allPerms = {
             OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, 
             GROUP_READ, GROUP_WRITE, GROUP_EXECUTE, 
             OTHERS_READ, OTHERS_WRITE, OTHERS_EXECUTE
         };
-        return *allPerms;
+        return allPerms;
     }
 
-    bool isOnPermission(const Permission& perm, const std::string& name) {
+    bool isOnPermission(const Permission& perm, const std::string& name) noexcept {
         fs::perms p = fs::status(name).permissions();
-        auto map = std::make_unique<std::map<Permission, std::filesystem::perms>>();
-        *map = {
+        std::map<Permission, std::filesystem::perms> map = {
             {OWNER_READ, std::filesystem::perms::owner_read},
             {OWNER_WRITE, std::filesystem::perms::owner_write},
             {OWNER_EXECUTE, std::filesystem::perms::owner_exec},
@@ -49,127 +40,171 @@ namespace filemaneger::element {
             {OTHERS_WRITE, std::filesystem::perms::others_write},
             {OTHERS_EXECUTE, std::filesystem::perms::others_exec}
         };
-        return (p & map->at(perm)) != fs::perms::none;
+        return (p & map[perm]) != fs::perms::none;
     }
 
-    std::map<Permission, bool> getPermissions(const std::string& name) {
-        auto map = std::make_unique<std::map<Permission, bool>>();
+    std::map<Permission, bool> getPermissions(const std::string& name) noexcept {
+        std::map<Permission, bool> map;
         for (const auto& permission : getAllPermissions()) {
-            (*map)[permission] = isOnPermission(permission, name);
+            map[permission] = isOnPermission(permission, name);
         }
-        return *map;
+        return map;
     }
 
-    void setPermissions(const std::string& name, const fs::perms& permissions) {
+    //TODO
+    void setPermissions(const std::string& name, const fs::perms& permissions) noexcept {
         fs::permissions(name, permissions);
     }
 
-    void reperm(const std::string& name, const fs::perms& permission, bool isActive) {
+    //TODO
+    void reperm(const std::string& name, const fs::perms& permission, bool isActive) noexcept {
         fs::perms p = fs::status(name).permissions();
         if (isActive) { p |= permission; } 
         else { p &= ~permission; }
     }
 
-    std::string pwd(const std::string& name) {
+    std::string pwd(const std::string& name) noexcept {
         return fs::absolute(name).string();
     }
 
-    bool exists(const std::string& name) {
+    bool exists(const std::string& name) noexcept {
         return fs::exists(name);
     }
 
-    void rename(const std::string& name, const std::string& newName) {
-        fs::rename(name, newName);
+    bool rename(const std::string& name, const std::string& newName) noexcept {
+        try {
+            fs::rename(name, newName);
+        } catch (const std::exception& e) {
+            return false;
+        }
+        return true;
     }
 
     void copy(const std::string& source, const std::string& destination) {
         fs::copy(source, destination);
     }
 
-    void remove(const std::string& name) {
-        if (!fs::remove(name)) {
-            throw ElementDeleteException("Error of delete element");
-        }
+    bool remove(const std::string& name) noexcept {
+        return fs::remove(name); 
     }
 
-    void create(const std::string& name) {
+    bool create(const std::string& name) noexcept {
         if (fs::exists(name)) {
-            throw ElementCreateException(("File or directory already exists: " + name).c_str());
+            return false;
         }
         if (in(name, '.')) { filemaneger::file::createFile(name); }
         else { filemaneger::directory::createDirectory(name); }
+        return true;
     }
 }
 
 namespace filemaneger::file {
 
-    void deleteFile(const std::string& path) {
+    bool deleteFile(const std::string& path) noexcept {
         if (!fs::remove(path)) {
-            throw ElementDeleteException(("Error deleting file: " + path).c_str());
+            return false;
         }
+        return true;
     }
 
-    void createFile(const std::string& path) {
+    bool createFile(const std::string& path) noexcept{
         if (fs::exists(path)) {
-            throw ElementCreateException(("File have already created: " + path).c_str());
+            return false;
         }
-        auto file = std::make_unique<std::ofstream>(path);
-        if (!file->is_open()) {
-            throw ElementCreateException(("Error opening file: " + path).c_str());
+        std::ofstream file(path);
+        if (!file.is_open()) {
+            return false;
         }
-        file->close();
+        file.close();
+        return true;
     }
 
-    void writeFile(const std::string& filename, 
+    bool writeFile(const std::string& filename, 
                     const std::string& string, 
-                    std::ios_base::openmode mode) 
+                    std::ios_base::openmode mode) noexcept
     {
         std::ofstream file(filename, mode);
         if (!file.is_open()) {
-            throw FileWriteException(("Error opening file: " + filename).c_str());
+            return false;
         }
         file << string;
         file.close();
+        return true;
     }
 
-    std::string readFile(const std::string& filename) {
+    std::optional<std::string> readFile(const std::string& filename) noexcept {
         std::ifstream file(filename);
         std::string result, line;
         if (!file.is_open()) {
-            throw FileReadException(("Error opening file: " + filename).c_str());
+            return std::nullopt;
         }
         while (std::getline(file, line)) {
             result += line + "\n";
         }
-        return result;
+        return std::make_optional<std::string>(result);
     }
 }
 
 namespace filemaneger::directory {
 
-    void createDirectory(const std::string& dirname) {
+    bool createDirectory(const std::string& dirname) noexcept {
         int result = -1;
 
-        #if defined(Win32)
+        #if defined(WIN32)
             result = mkdir(dirname.c_str());
         #elif defined(__unix__)
             result = mkdir(dirname.c_str(), 0777);
         #endif
 
         if (result == -1) {
-            throw ElementCreateException(("Could not create directory: " + dirname).c_str());
+            return false;
         }
+        return true;
     }
 
-    void changeDirectory(const std::string& dirname) {
+    bool changeDirectory(const std::string& dirname) noexcept {
         if (chdir(dirname.c_str()) == -1) {
-            throw ChangeDirectoryException(("Could not change directory to: " + dirname).c_str());
+            return false;
         }
+        return true;
     }
 
-    void deleteDirectory(const std::string& dirname) {
+    bool deleteDirectory(const std::string& dirname) noexcept {
         if (rmdir(dirname.c_str()) == -1) {
-            throw ElementDeleteException(("Could not delete directory: " + dirname).c_str());
+            return false;
         }
+        return true;
+    }
+
+    std::vector<std::string> getFilesInDirectory(const std::string& directoryPath) noexcept {
+        std::vector<std::string> files;
+        for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) {
+            if (entry.is_regular_file()) {
+                files.emplace_back(entry.path().filename().string());
+            }
+        }
+        return files;
+    }
+
+    std::vector<std::string> getDirectoriesInDirectory(const std::string& directoryPath) noexcept {
+        std::vector<std::string> directories;
+        for (const auto& entry : std::filesystem::directory_iterator(directoryPath)) {
+            if (entry.is_directory()) {
+                directories.emplace_back(entry.path().filename().string());
+            }
+        }
+        return directories;
+    }
+
+    std::vector<std::string> getFilesAndDirectories(const std::string& directoryPath) noexcept {
+        std::vector<std::string> files = getFilesInDirectory(directoryPath);
+        std::vector<std::string> directories = getDirectoriesInDirectory(directoryPath);
+        std::vector<std::string> result(std::move(directories));
+        result.insert(result.end(), files.begin(), files.end());
+        return result;
+    }
+
+    std::string getCurrentWorkingDirectory(void) noexcept {
+        return std::filesystem::current_path().string();
     }
 }

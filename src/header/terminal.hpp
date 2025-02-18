@@ -3,10 +3,12 @@
 #include <vector>
 #include <string>
 
-std::vector<std::string> getCommand(std::string& command);
+#include "resulthandler.hpp"
+
+std::vector<std::string> getCommand(std::string&);
 
 std::vector<std::string> setTerminal();
 
-bool getTerminal(const std::vector<std::string>& tokens);
+Result<bool> getTerminal(const std::vector<std::string>&) noexcept;
 
 void terminal();

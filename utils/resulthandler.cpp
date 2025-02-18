@@ -1,5 +1,9 @@
 #include "header/resulthandler.hpp"
 
-ThisError ResultError::value() const { 
-    return ThisError {m_error, m_message};
+const TypeOfError ResultError::type() const noexcept {
+    return m_type;
+}
+
+const std::string ResultError::message() const noexcept {
+    return m_message;
 }

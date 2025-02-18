@@ -6,7 +6,7 @@
 
 #include "header/fmobject.hpp"
 
-FMObject::FMObject(const command_t& command)
+FMObject::FMObject(const Universal& command)
     : m_command(command)
 {
     if (std::holds_alternative<std::string>(command)) m_type = STR;
@@ -27,7 +27,7 @@ std::string FMObject::toTerminal() const noexcept {
     }
     return std::get<std::string>(m_command);
 }
-void FMObject::getObject(const command_t& command) {
+void FMObject::getObject(const Universal& command) {
     m_command = command;
     if (std::holds_alternative<std::string>(command)) m_type = STR;
     else if (std::holds_alternative<std::vector<std::string>>(command)) m_type = VECSTR;

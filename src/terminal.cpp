@@ -8,8 +8,8 @@
 
 #include "header/usercommand.hpp"
 #include "header/communist.hpp"
-#include "header/filemaneger.hpp"
 #include "header/terminal.hpp"
+#include "header/element.hpp"
 
 std::vector<std::string> getCommand(std::string& command) {
     std::vector<std::string> tokens;
@@ -23,17 +23,21 @@ std::vector<std::string> getCommand(std::string& command) {
 
 std::vector<std::string> setTerminal() {
     std::string command;
-    std::cout << getCurrentWorkingDirectory() << "> ";
+    std::cout << filemaneger::directory::getCurrentWorkingDirectory() << "> ";
     std::getline(std::cin, command);
     return getCommand(command);
 }
 
-bool getTerminal(const std::vector<std::string>& tokens) {
+Result<bool> getTerminal(const std::vector<std::string>& tokens) noexcept {
     // TODO: false for "exit"
     if (tokens.at(0) == "exit") {
         return false;
     }
-    FMObject object(getFMObject(tokens));
+    auto t = getFMObject(tokens);
+    if (t.is_error()) {
+        return t.error();
+    }
+    FMObject object(*t);
     std::cout << object.toTerminal() << std::endl;
     return true;
 }
@@ -41,10 +45,13 @@ bool getTerminal(const std::vector<std::string>& tokens) {
 void terminal() {
     while (true)
     {
-        try {
-            if (!getTerminal(setTerminal())) { break; }
-        } catch (const std::exception& e) {
-            std::cerr << "Error: " << e.what() << '\n';
+        auto t = getTerminal(setTerminal());
+        if (t.is_error()) {
+            std::cerr << "Error: " << t.error().message() << '\n';
+            continue;
+        }
+        if (!*t) {
+            break;
         }
     }
 }
