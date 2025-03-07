@@ -8,9 +8,9 @@
     #include <unistd.h>
 #endif
 
-#include "header/details.hpp"
+#include "details.hpp"
 
-#include "header/element.hpp"
+#include "element.hpp"
 
 namespace fs = std::filesystem;
 

@@ -6,10 +6,10 @@
 #include <iostream>
 #include <sstream>
 
-#include "header/usercommand.hpp"
-#include "header/communist.hpp"
-#include "header/terminal.hpp"
-#include "header/element.hpp"
+#include "usercommand.hpp"
+#include "communist.hpp"
+#include "terminal.hpp"
+#include "element.hpp"
 
 std::vector<std::string> getCommand(std::string& command) {
     std::vector<std::string> tokens;

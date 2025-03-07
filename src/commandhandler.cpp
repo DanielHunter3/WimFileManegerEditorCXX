@@ -1,10 +1,10 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include "header/element.hpp"
-#include "header/communist.hpp"
+#include "element.hpp"
+#include "communist.hpp"
 
-#include "header/commandhandler.hpp"
+#include "commandhandler.hpp"
 
 Result<Universal> CommandHandler(const Function& func, 
                                 const std::vector<std::string>& arguments) noexcept 

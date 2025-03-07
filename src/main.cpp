@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "header/terminal.hpp"
+#include "terminal.hpp"
 
 int main(void) {
     terminal();

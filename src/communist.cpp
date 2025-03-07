@@ -3,7 +3,7 @@
 
 #include <map>
 
-#include "header/communist.hpp"
+#include "communist.hpp"
 
 Result<Function> stringToFunction(const std::string& strfunc) noexcept {
     std::map<std::string, Function> map = {

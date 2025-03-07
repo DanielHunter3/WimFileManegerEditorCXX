@@ -47,12 +47,12 @@ public:
     };
 
     Result(const T& value) 
-        : m_value(value) {}
+        : m_value(std::move(value)) {}
     Result(const T&& value) 
-        : m_value(value) {}
+        : m_value(std::move(value)) {}
 
     Result(const ResultError&& error)
-        : m_value(error) {}
+        : m_value(std::move(error)) {}
 
     constexpr bool is_error() const noexcept {
         return std::holds_alternative<ResultError>(m_value);
@@ -61,10 +61,9 @@ public:
         return std::holds_alternative<T>(m_value);
     }
 
-    const T& operator*() const noexcept {
+    const T& operator*() const {
         if (std::holds_alternative<ResultError>(m_value)) {
-            std::cerr << std::endl << error().message() << std::endl;
-            exit(PANIC_MEM);
+            throw std::runtime_error(error().message());
         }
         return std::get<T>(m_value);
     }
@@ -88,7 +87,7 @@ public:
     Unwraps the Result and returns the contained value. 
     If the Result is an error, it will print an error message and exit with code 505.
     */
-    const T unwrap() const {
+    const T unwrap() const noexcept {
         if (std::holds_alternative<ResultError>(m_value)) {
             std::cerr << std::endl << error().message() << std::endl;
             exit(PANIC_MEM);
@@ -102,7 +101,7 @@ public:
     Unwraps the Result and returns the contained value. 
     If the Result is an error, it will print an error message and exit with code 505.
     */
-    const T except(std::string&& message) const  {
+    const T except(std::string&& message) const noexcept  {
         if (std::holds_alternative<ResultError>(m_value)) {
             std::cerr << std::endl << message << std::endl;
             exit(PANIC_MEM);

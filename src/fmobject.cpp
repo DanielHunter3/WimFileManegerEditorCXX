@@ -4,7 +4,7 @@
 #include <map>
 #include <memory>
 
-#include "header/fmobject.hpp"
+#include "fmobject.hpp"
 
 FMObject::FMObject(const Universal& command)
     : m_command(command)
