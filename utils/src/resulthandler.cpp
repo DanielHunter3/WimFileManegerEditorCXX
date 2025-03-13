@@ -3,7 +3,7 @@
 
 #include "../include/resulthandler.hpp"
 
-const TypeOfError ResultError::type() const noexcept {
+TypeOfError ResultError::type() const noexcept {
     return m_type;
 }
 

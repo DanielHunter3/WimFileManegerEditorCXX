@@ -5,8 +5,6 @@
 #include <cstdlib>
 #include <iostream>
 
-#define PANIC_MEM 505
-
 enum TypeOfError {
     RangeOutError,
     UnknownElementError,
@@ -23,6 +21,15 @@ enum TypeOfError {
     //...
 };
 
+class ResultException : std::exception {
+public:
+    ResultException(const char* message): message_(message) {}
+    ResultException(const std::string& message): message_(message.c_str()) {}
+    const char* what() const noexcept override { return message_; }
+private:
+    const char* message_;
+};
+
 class ResultError {
 public:
     ResultError(const TypeOfError&& type, const std::string&& message)
@@ -30,7 +37,7 @@ public:
     ResultError(const TypeOfError&& type)
         : m_type(type), m_message("No information") {}
 
-    const TypeOfError type() const noexcept;
+    TypeOfError type() const noexcept;
     const std::string& message() const noexcept;
 
 private:
@@ -41,7 +48,7 @@ private:
 template <typename T>
 class Result {
 public:
-    enum ResultType {
+    enum class ResultType {
         Ok,
         Error
     };
@@ -63,16 +70,8 @@ public:
 
     const T& operator*() const {
         if (std::holds_alternative<ResultError>(m_value)) {
-            throw std::runtime_error(error().message());
+            throw ResultException(error().message());
         }
-        return std::get<T>(m_value);
-    }
-
-    /*
-    Unwraps the Result and returns the contained value.
-    If the Result is an error, it will throw the exception.
-    */
-    const T ok() const {
         return std::get<T>(m_value);
     }
     /*
@@ -80,31 +79,22 @@ public:
     If the Result is not an error, it will throw the exception.
     */
     const ResultError error() const {
+        if (std::holds_alternative<T>(m_value)) {
+            throw ResultException("Object is not error");
+        }
         return std::get<ResultError>(m_value);
     }
 
-    /*
-    Unwraps the Result and returns the contained value. 
-    If the Result is an error, it will print an error message and exit with code 505.
-    */
-    const T unwrap() const noexcept {
+    const T unwrap() const {
         if (std::holds_alternative<ResultError>(m_value)) {
-            std::cerr << std::endl << error().message() << std::endl;
-            exit(PANIC_MEM);
+            throw ResultException(error().message());
         }
         return std::get<T>(m_value);
     }
 
-    /* 
-    @param message the message to print if Result failed
-
-    Unwraps the Result and returns the contained value. 
-    If the Result is an error, it will print an error message and exit with code 505.
-    */
-    const T except(std::string&& message) const noexcept  {
+    const T except(std::string&& message) const {
         if (std::holds_alternative<ResultError>(m_value)) {
-            std::cerr << std::endl << message << std::endl;
-            exit(PANIC_MEM);
+            throw ResultException(message);
         }
         return std::get<T>(m_value);
     }
