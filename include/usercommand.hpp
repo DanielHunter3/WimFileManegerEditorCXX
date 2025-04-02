@@ -6,4 +6,4 @@
 #include "fmobject.hpp"
 #include "communist.hpp"
 
-Result<FMObject> getFMObject(const std::vector<std::string>&) noexcept;
+UResult<FMObject> getFMObject(const std::vector<std::string>&) noexcept;

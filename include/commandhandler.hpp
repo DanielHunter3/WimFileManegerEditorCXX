@@ -4,10 +4,10 @@
 #include <vector>
 #include <string>
 
-#include "resulthandler.hpp"
+#include "uresult.hpp"
 #include "communist.hpp"
 
 using Universal = std::variant<std::vector<std::string>, std::string>;
 
-Result<Universal> CommandHandler(const Function& func, 
+UResult<Universal> CommandHandler(const Function& func, 
                                 const std::vector<std::string>& arguments) noexcept;

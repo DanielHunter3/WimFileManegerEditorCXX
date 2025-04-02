@@ -6,7 +6,7 @@
 
 #include "commandhandler.hpp"
 
-Result<Universal> CommandHandler(const Function& func, 
+UResult<Universal> CommandHandler(const Function& func, 
                                 const std::vector<std::string>& arguments) noexcept 
 {
     Universal result;
@@ -14,17 +14,17 @@ Result<Universal> CommandHandler(const Function& func,
         // ----------------------------------------------------------------
         case Rename:
             if (arguments.size() < 3) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (!filemaneger::element::rename(arguments[1], arguments[2])) {
-                return ResultError {ElementRenameError};
+                return StructError {EnumError::ElementRenameError};
             }
             result = "\0";
             break;
         // ----------------------------------------------------------------
         case Copy:
             if (arguments.size() > 3) {
-                return ResultError {InvalidArgumentError}; 
+                return StructError {EnumError::InvalidArgumentError}; 
             }
             filemaneger::element::copy(arguments[1], arguments[2]);
             result = "\0";
@@ -32,70 +32,70 @@ Result<Universal> CommandHandler(const Function& func,
         // ----------------------------------------------------------------
         case Pwd:
             if (arguments.size() > 2) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }  
             result = filemaneger::element::pwd(arguments[1]);
             break;
         // ----------------------------------------------------------------
         case Cat:
             if (arguments.size() < 2) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (auto target = filemaneger::file::readFile(arguments[1]); 
                             target != std::nullopt) {
                 result = *target;
             }
             else {
-                return ResultError {FileReadError};
+                return StructError {EnumError::FileReadError, "Couldn't read the file"};
             }
             break;
         // ----------------------------------------------------------------
         case Echo:
             if (arguments.size() < 3) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (!filemaneger::file::writeFile(arguments[1], arguments[2], std::ios::out)) {
-                return ResultError {FileWriteError};
+                return StructError {EnumError::FileWriteError, "Failed to write information to a file"};
             }
             result = "\0";
             break;
         // ----------------------------------------------------------------
         case Mkdir:
             if (arguments.size() < 2) {
-                return ResultError {RangeOutError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (!filemaneger::directory::createDirectory(arguments[1])) {
-                return ResultError {ElementCreateError};
+                return StructError {EnumError::ElementCreateError, "Couldn't create folder"};
             }
             result = "\0";
             break;
         // ----------------------------------------------------------------
         case Rmdir:
             if (arguments.size() < 2) {
-                return ResultError {RangeOutError};
+                return StructError {EnumError::RangeOutError};
             }
             if (!filemaneger::directory::deleteDirectory(arguments[1])) {
-                return ResultError {ElementDeleteError};
+                return StructError {EnumError::ElementDeleteError, "Couldn't delete folder"};
             }
             result = "\0";
             break;
         // ----------------------------------------------------------------
         case Touch:
             if (arguments.size() < 2) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (!filemaneger::file::createFile(arguments[1])) {
-                return ResultError {ElementCreateError};
+                return StructError {EnumError::ElementCreateError, "Failed to create a file"};
             }
             result = "\0";
             break;
         // ----------------------------------------------------------------
         case Rm:
             if (arguments.size() < 2) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (!filemaneger::file::deleteFile(arguments[1])) {
-                return ResultError {ElementDeleteError};
+                return StructError {EnumError::ElementDeleteError, "Failed to delete a file"};
             }
             result = "\0";
             break;
@@ -106,21 +106,21 @@ Result<Universal> CommandHandler(const Function& func,
         // ----------------------------------------------------------------
         case Cd:
             if (arguments.size() < 2) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (!filemaneger::directory::changeDirectory(arguments[1])) {
-                return ResultError {ChangeDirectoryError};
+                return StructError {EnumError::ChangeDirectoryError};
             }
             result = "\0";
             break;
         // ----------------------------------------------------------------
         case Cut:
             if (arguments.size() < 3) {
-                return ResultError {InvalidArgumentError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             filemaneger::element::copy(arguments[1], arguments[2]);
             if (!filemaneger::element::remove(arguments[1])) {
-                return ResultError {ElementDeleteError};
+                return StructError {EnumError::ElementDeleteError};
             }
             result = "\0";
             break;
@@ -137,7 +137,7 @@ Result<Universal> CommandHandler(const Function& func,
         // TODO: Perm and Reperm
         // ----------------------------------------------------------------
         default:
-            return ResultError {UnknownElementError};
+            return StructError {EnumError::UnknownElementError, "The command could not be recognized"};
             break;
     }
     return result;

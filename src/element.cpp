@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
-#if defined(__unix__)
+#ifdef __unix__
     #include <unistd.h>
 #endif
 

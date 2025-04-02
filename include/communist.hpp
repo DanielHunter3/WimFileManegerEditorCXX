@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "resulthandler.hpp"
+#include "uresult.hpp"
 
 enum Function {
     Cat, Pwd, Rename,
@@ -13,4 +13,4 @@ enum Function {
     Exit
 };
 
-Result<Function> stringToFunction(const std::string&) noexcept;
+ UResult<Function> stringToFunction(const std::string&) noexcept;

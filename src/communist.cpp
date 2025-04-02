@@ -5,7 +5,7 @@
 
 #include "communist.hpp"
 
-Result<Function> stringToFunction(const std::string& strfunc) noexcept {
+UResult<Function> stringToFunction(const std::string& strfunc) noexcept {
     std::map<std::string, Function> map = {
         {"cat", Cat}, {"pwd", Pwd}, {"rename", Rename}, 
         {"cp", Copy}, {"cut", Cut}, {"echo", Echo},
@@ -15,7 +15,7 @@ Result<Function> stringToFunction(const std::string& strfunc) noexcept {
         {"exit", Exit}
     };
     if (map.find(strfunc) == map.end()) {
-        return ResultError {RangeOutError, "This command is not supported"};
+        return StructError {EnumError::RangeOutError, "This command is not supported"};
     }
     return map[strfunc];
 }

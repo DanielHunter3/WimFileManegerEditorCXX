@@ -28,9 +28,9 @@ std::vector<std::string> setTerminal() {
     return getCommand(command);
 }
 
-Result<bool> getTerminal(const std::vector<std::string>& tokens) noexcept {
+UResult<bool> getTerminal(const std::vector<std::string>& tokens) noexcept {
     if (tokens.empty()) {
-        return ResultError {EmptyCommandError, "No command specified!"};
+        return StructError {EnumError::EmptyCommandError, "No command specified!"};
     }
     if (tokens[0] == "exit") {
         return false;
@@ -40,7 +40,7 @@ Result<bool> getTerminal(const std::vector<std::string>& tokens) noexcept {
         return t.error();
     }
     FMObject object(*t);
-    std::cout << object.toTerminal() << std::endl;
+    std::cout << object.toTerminal() << '\n';
     return true;
 }
 
