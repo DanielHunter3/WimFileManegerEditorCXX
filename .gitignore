@@ -1,10 +1,15 @@
 .PVS-Studio
 .vscode
 build
+app
 
 *.exe
 *.txt
 *.json
 
+!app/data.txt
+
 !CMakeLists.txt
 !app/data.txt
+
+!build.exe
