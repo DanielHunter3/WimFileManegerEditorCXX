@@ -7,26 +7,35 @@
 #include <optional>
 #include <vector>
 
+#include "uresult.hpp"
+
+namespace fs = std::filesystem;
+using fs::perms;
+
 namespace filemaneger {}
 
-namespace filemaneger::element {
-    enum Permission {
-        OWNER_READ,
-        OWNER_WRITE,
-        OWNER_EXECUTE,
-        GROUP_READ,
-        GROUP_WRITE,
-        GROUP_EXECUTE,
-        OTHERS_READ,
-        OTHERS_WRITE,
-        OTHERS_EXECUTE
+namespace filemaneger::element { 
+    struct DataPermission {
+        std::string name;
+        std::filesystem::perms perm = fs::perms::none;
+        // add, remove, replace
+        std::filesystem::perm_options option = std::filesystem::perm_options::replace;
+    };
+    struct PermissionMapping {
+        char userType;
+        char permission;
+        fs::perms value;
+    };
+    struct OperationMapping {
+        char op;
+        fs::perm_options option;
     };
 
-    std::array<Permission, 9> getAllPermissions() noexcept;
-    bool isOnPermission(const Permission& perm, const std::string&) noexcept;
-    std::map<Permission, bool> getPermissions(const std::string&) noexcept;
-    void setPermissions(const std::string&, const std::filesystem::perms&) noexcept;
-    void reperm(const std::string&, const std::filesystem::perms&, bool) noexcept;
+    fs::perms getPermissionValue(const char&, const char&) noexcept;
+    UResult<DataPermission> getDataPerm(const std::string&, const std::string&) noexcept;
+    bool isOnPermission(const std::filesystem::perms& perm, const std::string&) noexcept;
+    UResult<std::map<std::filesystem::perms, bool>> getPermissions(const std::string&) noexcept;
+    bool reperm(const DataPermission&) noexcept;
     std::string pwd(const std::string&) noexcept;
     bool exists(const std::string&) noexcept;
     bool rename(const std::string&, const std::string&) noexcept;

@@ -6,6 +6,8 @@
 
 #include "commandhandler.hpp"
 
+using enum Function;
+
 UResult<Universal> CommandHandler(const Function& func, 
                                 const std::vector<std::string>& arguments) noexcept 
 {
@@ -72,7 +74,7 @@ UResult<Universal> CommandHandler(const Function& func,
         // ----------------------------------------------------------------
         case Rmdir:
             if (arguments.size() < 2) {
-                return StructError {EnumError::RangeOutError};
+                return StructError {EnumError::InvalidArgumentError};
             }
             if (!filemaneger::directory::deleteDirectory(arguments[1])) {
                 return StructError {EnumError::ElementDeleteError, "Couldn't delete folder"};
@@ -134,11 +136,25 @@ UResult<Universal> CommandHandler(const Function& func,
             result = "\0";
             break;
         // ----------------------------------------------------------------
-        // TODO: Perm and Reperm
+        case Chmod: {
+            if (arguments.size() < 3) {
+                return StructError {EnumError::InvalidArgumentError};
+            }
+            const auto arg = filemaneger::element::getDataPerm(arguments[1], arguments[2]);
+            if (arg.is_error()) {
+                return arg.error();
+            }
+            if (!filemaneger::element::reperm(*arg)) {
+                return StructError {EnumError::ChmodError};
+            }
+            result = "\0";
+            break; }
         // ----------------------------------------------------------------
+        case Exit: 
+            return StructError {EnumError::ExitCommandError};
+        //----------------------------------------------------------------
         default:
             return StructError {EnumError::UnknownElementError, "The command could not be recognized"};
-            break;
     }
     return result;
 }

@@ -2,65 +2,132 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <fstream>
-#include <sys/stat.h>
-
-#ifdef __unix__
-    #include <unistd.h>
-#endif
 
 #include "details.hpp"
 
 #include "element.hpp"
 
-namespace fs = std::filesystem;
-
 namespace filemaneger {}
 
 namespace filemaneger::element {
+    constexpr std::array<fs::perms, 16> PERMS = {
+        perms::owner_read, perms::owner_write, perms::owner_exec, perms::owner_all,
+        perms::group_read, perms::group_write, perms::group_exec, perms::group_all,
+        perms::others_read, perms::others_write, perms::others_exec, perms::others_all,
+        //-------------------------------------------------------------------------
+        perms::owner_read | perms::group_read | perms::others_read,
+        perms::owner_write | perms::group_write | perms::others_write,
+        perms::owner_exec | perms::group_exec | perms::others_exec,
+        //--------------------------------------------------------------------------
+        perms::all,
+    };
 
-    std::array<Permission, 9> getAllPermissions() noexcept {
-        std::array<Permission, 9> allPerms = {
-            OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, 
-            GROUP_READ, GROUP_WRITE, GROUP_EXECUTE, 
-            OTHERS_READ, OTHERS_WRITE, OTHERS_EXECUTE
+    constexpr std::array<PermissionMapping, 16> permissionMappings {{
+        {'u', 'r', perms::owner_read},
+        {'u', 'w', perms::owner_write},
+        {'u', 'x', perms::owner_exec},
+        {'u', 'a', perms::owner_all},
+    
+        {'g', 'r', perms::group_read},
+        {'g', 'w', perms::group_write},
+        {'g', 'x', perms::group_exec},
+        {'g', 'a', perms::group_all},
+    
+        {'o', 'r', perms::others_read},
+        {'o', 'w', perms::others_write},
+        {'o', 'x', perms::others_exec},
+        {'o', 'a', perms::others_all},
+    
+        {'a', 'r', perms::owner_read | perms::group_read | perms::others_read},
+        {'a', 'w', perms::owner_write | perms::group_write | perms::others_write},
+        {'a', 'x', perms::owner_exec | perms::group_exec | perms::others_exec},
+        {'a', 'a', perms::all}
+    }};
+
+    constexpr std::array<OperationMapping, 3> OPERATION_MAPPINGS {{
+        {'+', fs::perm_options::add},
+        {'-', fs::perm_options::remove},
+        {'/', fs::perm_options::replace}
+    }};
+
+    fs::perms getPermissionValue(const char& userType, const char& permission) noexcept {
+        static constexpr auto findPermission = [](const char& ut, const char& p) constexpr noexcept -> fs::perms {
+            for (const auto& mapping : permissionMappings) {
+                if (mapping.userType == ut && mapping.permission == p) {
+                    return mapping.value;
+                }
+            }
+            return perms::none;
         };
-        return allPerms;
+        return findPermission(userType, permission);
     }
 
-    bool isOnPermission(const Permission& perm, const std::string& name) noexcept {
-        fs::perms p = fs::status(name).permissions();
-        std::map<Permission, std::filesystem::perms> map = {
-            {OWNER_READ, std::filesystem::perms::owner_read},
-            {OWNER_WRITE, std::filesystem::perms::owner_write},
-            {OWNER_EXECUTE, std::filesystem::perms::owner_exec},
-            {GROUP_READ, std::filesystem::perms::group_read},
-            {GROUP_WRITE, std::filesystem::perms::group_write},
-            {GROUP_EXECUTE, std::filesystem::perms::group_exec},
-            {OTHERS_READ, std::filesystem::perms::others_read},
-            {OTHERS_WRITE, std::filesystem::perms::others_write},
-            {OTHERS_EXECUTE, std::filesystem::perms::others_exec}
-        };
-        return (p & map[perm]) != fs::perms::none;
+    UResult<DataPermission> 
+    getDataPerm(const std::string& name, const std::string& str) noexcept
+    {
+        if (str.length() != 3) {  // Минимальная длина: "u+r"
+            return StructError {EnumError::InvalidArgumentError};
+        }
+    
+        char operationChar = str[1];
+        auto opIt = std::find_if(OPERATION_MAPPINGS.begin(), OPERATION_MAPPINGS.end(),
+        [operationChar](const auto& mapping) { 
+            return mapping.op == operationChar; 
+        });
+
+        if (opIt == OPERATION_MAPPINGS.end()) {
+            return StructError {EnumError::UnknownElementError};
+        }
+    
+        fs::perms perm = getPermissionValue(str[0], str[2]);
+        if (perm == perms::none) {
+            return StructError {EnumError::InvalidArgumentError};
+        }
+    
+        return DataPermission {name, perm, opIt->option};
     }
 
-    std::map<Permission, bool> getPermissions(const std::string& name) noexcept {
-        std::map<Permission, bool> map;
-        for (const auto& permission : getAllPermissions()) {
-            map[permission] = isOnPermission(permission, name);
+    bool isOnPermission(const fs::perms& perm, const std::string& name) noexcept {
+        // fs::perms p = fs::status(name).permissions();
+        // return (p & perm) != fs::perms::none;
+        if (!fs::exists(name)) {
+            return false;
+        }
+        fs::perms currentPermissions = fs::status(name).permissions();
+        // Проверяем, что все запрашиваемые биты разрешений установлены
+        return (currentPermissions & perm) == perm;
+    }
+
+    UResult<std::map<fs::perms, bool>> getPermissions(const std::string& name) noexcept {
+        if (!fs::exists(name)) {
+            return StructError {EnumError::DataFoundError};
+        }
+        std::map<fs::perms, bool> map;
+        
+        // Получаем текущие разрешения файла один раз
+        fs::perms currentPermissions = fs::status(name).permissions();
+        
+        for (const auto& permission : PERMS) {
+            // Проверяем каждое разрешение
+            map[permission] = (currentPermissions & permission) == permission;
         }
         return map;
     }
 
-    //TODO
-    void setPermissions(const std::string& name, const fs::perms& permissions) noexcept {
-        fs::permissions(name, permissions);
-    }
-
-    //TODO
-    void reperm(const std::string& name, const fs::perms& permission, bool isActive) noexcept {
-        fs::perms p = fs::status(name).permissions();
-        if (isActive) { p |= permission; } 
-        else { p &= ~permission; }
+    bool reperm(const DataPermission& data) noexcept {
+        if (!fs::exists(data.name)) {
+            return false;
+        }
+        try {
+            fs::permissions(
+                data.name,
+                data.perm,
+                data.option
+            );
+        } catch (fs::filesystem_error& e) {
+            return false;
+        }
+        return true;
     }
 
     std::string pwd(const std::string& name) noexcept {
@@ -92,8 +159,8 @@ namespace filemaneger::element {
         if (fs::exists(name)) {
             return false;
         }
-        if (in(name, '.')) { filemaneger::file::createFile(name); }
-        else { filemaneger::directory::createDirectory(name); }
+        in(name, '.') ? 
+            filemaneger::file::createFile(name) : filemaneger::directory::createDirectory(name);
         return true;
     }
 }
@@ -107,7 +174,7 @@ namespace filemaneger::file {
         return true;
     }
 
-    bool createFile(const std::string& path) noexcept{
+    bool createFile(const std::string& path) noexcept {
         if (fs::exists(path)) {
             return false;
         }
@@ -141,6 +208,7 @@ namespace filemaneger::file {
         while (std::getline(file, line)) {
             result += line + "\n";
         }
+        file.close();
         return std::make_optional<std::string>(result);
     }
 }
@@ -148,32 +216,19 @@ namespace filemaneger::file {
 namespace filemaneger::directory {
 
     bool createDirectory(const std::string& dirname) noexcept {
-        int result = -1;
-
-        #if defined(WIN32)
-            result = mkdir(dirname.c_str());
-        #elif defined(__unix__)
-            result = mkdir(dirname.c_str(), 0777);
-        #endif
-
-        if (result == -1) {
-            return false;
-        }
-        return true;
+        return fs::create_directories(dirname);
     }
 
     bool changeDirectory(const std::string& dirname) noexcept {
-        if (chdir(dirname.c_str()) == -1) {
+        if (!fs::exists(dirname)) {
             return false;
         }
+        fs::current_path(dirname);
         return true;
     }
 
     bool deleteDirectory(const std::string& dirname) noexcept {
-        if (rmdir(dirname.c_str()) == -1) {
-            return false;
-        }
-        return true;
+        return (fs::remove_all(dirname) == -(1ULL) ? false : true);
     }
 
     std::vector<std::string> getFilesInDirectory(const std::string& directoryPath) noexcept {

@@ -20,6 +20,7 @@ class StructError {
       : m_type(std::move(type)), m_message(std::move(message)) {}
     StructError(const E&& type)
       : m_type(std::move(type)), m_message("No information") {}
+    StructError(void) = delete;
 
     E type() const noexcept {
       return m_type;
@@ -65,6 +66,13 @@ class Result {
         throw ResultException(error().message());
       }
       return std::get<T>(m_value);
+    }
+
+    const T* operator->() const {
+      if (std::holds_alternative<StructError<E>>(m_value)) {
+        throw ResultException(error().message());
+      }
+      return &std::get<T>(m_value);
     }
 
     /*

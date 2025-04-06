@@ -15,6 +15,8 @@ enum class EnumError {
   FileWriteError,
   ChangeDirectoryError,
   EmptyCommandError,
+  ExitCommandError,
+  ChmodError
 };
 
 template <typename T>

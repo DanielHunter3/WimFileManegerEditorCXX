@@ -32,12 +32,10 @@ UResult<bool> getTerminal(const std::vector<std::string>& tokens) noexcept {
     if (tokens.empty()) {
         return StructError {EnumError::EmptyCommandError, "No command specified!"};
     }
-    if (tokens[0] == "exit") {
-        return false;
-    }
     auto t = getFMObject(tokens);
     if (t.is_error()) {
-        return t.error();
+        if (t.error().type() == EnumError::ExitCommandError) return false;
+        else return t.error();
     }
     FMObject object(*t);
     std::cout << object.toTerminal() << '\n';

@@ -5,11 +5,13 @@
 
 #include "communist.hpp"
 
+using enum Function;
+
 UResult<Function> stringToFunction(const std::string& strfunc) noexcept {
     std::map<std::string, Function> map = {
         {"cat", Cat}, {"pwd", Pwd}, {"rename", Rename}, 
-        {"cp", Copy}, {"cut", Cut}, {"echo", Echo},
-        {"perm", Perm}, {"reperm", Reperm}, {"ls", Ls}, 
+        {"cp", Copy}, {"cut", Cut}, {"echo", Echo}, 
+        {"chmod", Chmod}, {"ls", Ls}, 
         {"cd", Cd}, {"mkdir", Mkdir}, {"rmdir", Rmdir}, 
         {"cls", Cls}, {"rm", Rm}, {"touch", Touch},
         {"exit", Exit}

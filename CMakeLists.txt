@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(MyProject CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -21,6 +21,3 @@ file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE UTILS "utils/src/*.cpp")
 
 add_executable(MyExecutable "src/main.cpp" ${SOURCES} ${UTILS})
-
-# Подключаем необходимые библиотеки (если есть)
-#target_link_libraries(MyExecutable kernel32 user32 gdi32)
