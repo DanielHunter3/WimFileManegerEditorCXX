@@ -5,7 +5,7 @@
 
 #include "uresult.hpp"
 
-std::vector<std::string> getCommand(std::string&);
+std::vector<std::string> getCommand(const std::string&);
 
 std::vector<std::string> setTerminal();
 

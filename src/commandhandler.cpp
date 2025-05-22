@@ -3,158 +3,96 @@
 
 #include "element.hpp"
 #include "communist.hpp"
+#include "utildef.hpp"
 
 #include "commandhandler.hpp"
 
 using enum Function;
 
-UResult<Universal> CommandHandler(const Function& func, 
-                                const std::vector<std::string>& arguments) noexcept 
+UResult<Universal>
+CommandHandler(const Function& func, const std::vector<std::string>& arguments) noexcept
 {
-    Universal result;
-    switch (func) {
-        // ----------------------------------------------------------------
-        case Rename:
-            if (arguments.size() < 3) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (!filemaneger::element::rename(arguments[1], arguments[2])) {
-                return StructError {EnumError::ElementRenameError};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Copy:
-            if (arguments.size() > 3) {
-                return StructError {EnumError::InvalidArgumentError}; 
-            }
-            filemaneger::element::copy(arguments[1], arguments[2]);
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Pwd:
-            if (arguments.size() > 2) {
-                return StructError {EnumError::InvalidArgumentError};
-            }  
-            result = filemaneger::element::pwd(arguments[1]);
-            break;
-        // ----------------------------------------------------------------
-        case Cat:
-            if (arguments.size() < 2) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (auto target = filemaneger::file::readFile(arguments[1]); 
-                            target != std::nullopt) {
-                result = *target;
-            }
-            else {
-                return StructError {EnumError::FileReadError, "Couldn't read the file"};
-            }
-            break;
-        // ----------------------------------------------------------------
-        case Echo:
-            if (arguments.size() < 3) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (!filemaneger::file::writeFile(arguments[1], arguments[2], std::ios::out)) {
-                return StructError {EnumError::FileWriteError, "Failed to write information to a file"};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Mkdir:
-            if (arguments.size() < 2) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (!filemaneger::directory::createDirectory(arguments[1])) {
-                return StructError {EnumError::ElementCreateError, "Couldn't create folder"};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Rmdir:
-            if (arguments.size() < 2) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (!filemaneger::directory::deleteDirectory(arguments[1])) {
-                return StructError {EnumError::ElementDeleteError, "Couldn't delete folder"};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Touch:
-            if (arguments.size() < 2) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (!filemaneger::file::createFile(arguments[1])) {
-                return StructError {EnumError::ElementCreateError, "Failed to create a file"};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Rm:
-            if (arguments.size() < 2) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (!filemaneger::file::deleteFile(arguments[1])) {
-                return StructError {EnumError::ElementDeleteError, "Failed to delete a file"};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Ls:
-            result = filemaneger::directory::getFilesAndDirectories(".");
-            break;
-        // ----------------------------------------------------------------
-        case Cd:
-            if (arguments.size() < 2) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            if (!filemaneger::directory::changeDirectory(arguments[1])) {
-                return StructError {EnumError::ChangeDirectoryError};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Cut:
-            if (arguments.size() < 3) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            filemaneger::element::copy(arguments[1], arguments[2]);
-            if (!filemaneger::element::remove(arguments[1])) {
-                return StructError {EnumError::ElementDeleteError};
-            }
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Cls:
-            #ifdef _WIN32
-                std::system("cls");
-            #else
-                std::system("clear");
-            #endif
-            result = "\0";
-            break;
-        // ----------------------------------------------------------------
-        case Chmod: {
-            if (arguments.size() < 3) {
-                return StructError {EnumError::InvalidArgumentError};
-            }
-            const auto arg = filemaneger::element::getDataPerm(arguments[1], arguments[2]);
-            if (arg.is_error()) {
-                return arg.error();
-            }
-            if (!filemaneger::element::reperm(*arg)) {
-                return StructError {EnumError::ChmodError};
-            }
-            result = "\0";
-            break; }
-        // ----------------------------------------------------------------
-        case Exit: 
-            return StructError {EnumError::ExitCommandError};
-        //----------------------------------------------------------------
-        default:
-            return StructError {EnumError::UnknownElementError, "The command could not be recognized"};
+  if (!validQuantityOfArguments(func, static_cast<int8_t>(arguments.size() - 1))) {
+    return ResultError(EnumError::InvalidArgumentError, "...");
+  }
+
+  Universal result;
+  switch (func) {
+    // ----------------------------------------------------------------
+    case Rename:
+      IfOptionByResultError(filemanager::element::rename(arguments[1], arguments[2]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Copy:
+      IfOptionByResultError(filemanager::element::copy(arguments[1], arguments[2]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Pwd:
+      if (auto value = filemanager::element::pwd(arguments[1]); !value.has_value()) {
+        ResultErrorFrom(value.error());
+      } else {
+        result = *value;
+      }
+      break;
+    // ----------------------------------------------------------------
+    case Cat:
+      if (auto target = filemanager::file::readFile(arguments[1]); target.has_value()) {
+        result = *target;
+      } else {
+        return ResultErrorFrom(target.error());
+      }
+      break;
+    // ----------------------------------------------------------------
+    case Echo:
+      IfOptionByResultError(filemanager::file::writeFile(arguments[1], arguments[2], std::ios::out));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Mkdir:
+      IfOptionByResultError(filemanager::directory::createDirectory(arguments[1]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Rmdir:
+      IfOptionByResultError(filemanager::directory::deleteDirectory(arguments[1]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Touch:
+      IfOptionByResultError(filemanager::file::createFile(arguments[1]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Rm:
+      IfOptionByResultError(filemanager::file::deleteFile(arguments[1]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Ls:
+      result = filemanager::directory::getFilesAndDirectories(".");
+      break;
+    // ----------------------------------------------------------------
+    case Cd:
+      IfOptionByResultError(filemanager::directory::changeDirectory(arguments[1]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Cut:
+      IfOptionByResultError(filemanager::element::cut(arguments[1], arguments[2]));
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Cls:
+      filemanager::element::cli::clearTerminal();
+      return std::nullopt;
+    // ----------------------------------------------------------------
+    case Chmod: {
+      const auto arg = filemanager::element::permission::getDataPerm(arguments[1], arguments[2]);
+      if (!arg.has_value()) {
+        return ResultErrorFrom(arg.error());
+      }
+      IfOptionByResultError(filemanager::element::permission::reperm(*arg));
+      return std::nullopt;
     }
-    return result;
+    // ----------------------------------------------------------------
+    case Exit:
+      return ResultError(EnumError::ExitCommandError, "Exit to command");
+    //----------------------------------------------------------------
+    default:
+      return ResultError(EnumError::UnknownError, "The command could not be recognized");
+  }
+  return result;
 }

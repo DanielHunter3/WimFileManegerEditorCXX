@@ -8,8 +8,4 @@ app
 *.json
 
 !app/data.txt
-
 !CMakeLists.txt
-!app/data.txt
-
-!build.exe

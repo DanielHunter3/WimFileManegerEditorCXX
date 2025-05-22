@@ -3,46 +3,40 @@
 
 #include <map>
 #include <memory>
+#include <stdexcept>
 
 #include "fmobject.hpp"
 
+using enum Type;
+
 FMObject::FMObject(const Universal& command)
-    : m_command(command)
+  : m_command(command)
 {
-    if (std::holds_alternative<std::string>(command)) m_type = STR;
-    else if (std::holds_alternative<std::vector<std::string>>(command)) m_type = VECSTR;
-    else m_type = UNKNOWN;
+  if (std::holds_alternative<std::string>(command)) m_type = STR;
+  else if (std::holds_alternative<std::vector<std::string>>(command)) m_type = VECSTR;
+  else if (std::holds_alternative<std::nullopt_t>(command)) m_type = NONE;
+  else throw std::runtime_error("Unknown type");
 }
-FMObject::FMObject(void) = default;
 FMObject::~FMObject() = default;
 
 Type FMObject::setType() const noexcept { return m_type; }
 std::string FMObject::toTerminal() const noexcept {
-    if (m_type == VECSTR) {
-        // Если кол-во элементов векторе огромно,
-        // то лучше перестраховаться и воспользоваться указателем,
-        // а не стековой переменной
-        auto result = std::make_unique<std::string>();
-        for (const auto& arg : std::get<std::vector<std::string>>(m_command)) {
-            *result += arg + "\n";
-        }
-        return result->substr(0, result->size() - 1);
+  if (m_type == NONE) { return "\0"; }
+  if (m_type == VECSTR) {
+    const auto result = std::make_unique<std::string>();
+    for (const auto& arg : std::get<std::vector<std::string>>(m_command)) {
+      *result += arg + "\n";
     }
-    return std::get<std::string>(m_command);
-}
-
-void FMObject::getObject(const Universal& command) {
-    m_command = command;
-    if (std::holds_alternative<std::string>(command)) m_type = STR;
-    else if (std::holds_alternative<std::vector<std::string>>(command)) m_type = VECSTR;
-    else m_type = UNKNOWN;
+    return result->substr(0, result->size() - 1);
+  }
+  return std::get<std::string>(m_command);
 }
 
 std::string typeToString(const Type& type) noexcept { 
-    std::map<Type, std::string> map = {
-        {STR, "STR"},
-        {VECSTR, "VECSTR"},
-        {UNKNOWN, "UNKNOWN"},
-    };
-    return map[type];
+  std::map<Type, std::string> map = {
+    {STR, "STR"},
+    {VECSTR, "VECSTR"},
+    {NONE, "NONE"},
+  };
+  return map[type];
 }

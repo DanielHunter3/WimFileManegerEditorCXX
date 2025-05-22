@@ -1,26 +1,47 @@
 #pragma once
 
-#include "result.hpp"
+#include <expected>
+#include <optional>
 
-enum class EnumError {
-  RangeOutError,
-  UnknownElementError,
-  InvalidArgumentError,
-  FileReadError,
-  ElementDeleteError,
-  ElementCreateError,
-  DataFoundError,
-  ElementRenameError,
-  ElementCopyError,
-  FileWriteError,
-  ChangeDirectoryError,
-  EmptyCommandError,
-  ExitCommandError,
-  ChmodError
+template <typename E>
+class StructError {
+ public:
+  StructError(E type, std::string message)
+   : m_type(std::move(type)), m_message(std::move(message)) {}
+  StructError() = delete;
+
+  E type() const noexcept {
+   return m_type;
+  }
+  [[nodiscard]] const std::string& message() const noexcept {
+   return m_message;
+  }
+
+ private:
+  E m_type;
+  std::string m_message;
 };
 
-template <typename T>
-using UResult =  Result<T, EnumError>;
+enum class EnumError {
+ RangeOutError,
+ InvalidArgumentError,
+ FileReadError,
+ FileWriteError,
+ ElementDeleteError,
+ ElementCreateError,
+ DataFoundError,
+ ChangeDirectoryError,
+ EmptyCommandError,
+ ExitCommandError,
+ ChmodError,
+ FileSystemError,
+ UnknownError,
+ NotFoundError,
+};
 
-// template <typename T>
-// using UResult =  UResult<T, StructError>;
+using Error = StructError<EnumError>;
+
+template <typename T>
+using UResult = std::expected<T, Error>;
+
+using VOption = std::optional<Error>;
